@@ -1,0 +1,6 @@
+@Tasks_HostAddress = http://localhost:5259
+
+GET {{Tasks_HostAddress}}/page/
+Accept: application/json
+
+###

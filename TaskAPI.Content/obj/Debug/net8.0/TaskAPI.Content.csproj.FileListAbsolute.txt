@@ -1,0 +1,11 @@
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\bin\Debug\net8.0\TaskAPI.Content.deps.json
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\bin\Debug\net8.0\TaskAPI.Content.dll
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\bin\Debug\net8.0\TaskAPI.Content.pdb
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.AssemblyInfoInputs.cache
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.AssemblyInfo.cs
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.csproj.CoreCompileInputs.cache
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.dll
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\refint\TaskAPI.Content.dll
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\TaskAPI.Content.pdb
+C:\Users\pivar\Documents\Languages\CSharp\TaskAPI\TaskAPI.Content\obj\Debug\net8.0\ref\TaskAPI.Content.dll
