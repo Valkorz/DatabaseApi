@@ -7,7 +7,7 @@
 </body>
 
 ## Template API documentation
-This project is a template for constructing an API, featuring code examples for handling http requests for each programming language. You may refer to ```TaskAPI/docs/guide.md``` for a step-by-step guide to creating your own ASP.NET API project.
+This project is a template for constructing an API, featuring code examples for handling http requests for each programming language. You may refer to ```TaskAPI/docs/guide.md``` for a step-by-step guide to creating your own ASP.NET API project with an entity framework SQLite database. `TaskAPI/Requesters` also contains code examples for http operations on different programming languages, including C/C++ for embedded systems.
 
 <body>
     <div style=

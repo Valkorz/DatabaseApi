@@ -160,12 +160,109 @@ fetch(`http://localhost:5000/page`)
 
 ```
 
-## Step 8: Adding a SQL Database
+## Step 8: Adding a SQL Database with Entity framework
 
 Let's go one step beyond, what if we added a way for users to add, modify and remove data from a database? Like sending messages in a forum for example. In order to add SQLite to your WebApi project, please follow these steps:
 
-  1. **In the terminal inside the WebApi folder, run:**
-    `dotnet add package Microsoft.EntityFrameworkCore.Sqlite`
-    `dotnet add package Microsoft.EntityFrameworkCore.Design`
-  2. **Create a model class**:
+#### 1 - In the terminal inside the WebApi folder, run:
+`dotnet add package Microsoft.EntityFrameworkCore.Sqlite`
+`dotnet add package Microsoft.EntityFrameworkCore.Design`
+
+Also make sure to include the installed libraries:
+```csharp
+using Microsoft.EntityFrameworkCore.Sqlite;
+using Microsoft.EntityFrameworkCore.Design;
+```
+
+These libraries will handle the SQL operations and their construction, eliminating the need of creating a separate SQL file. This allows the creation of tables and queries inside the C# code itself. It's worth noting that some scenarios you might want to use an external database file instead. 
+
+#### 2 - Create a model class:
+Using `TaskController.cs`, a file available in this repository, as an example, create the model class as follows:
+
+```csharp
+    public class TaskItem
+    {
+        public int Id {get; set;}
+        public string Name {get; set;}
+        public bool IsComplete {get; set;}
+    }
+```
+
+This class will be used as reference when creating the SQL table for the API.
+
+#### 3 - Create a context class:
+
+This class will be used to create a context for the database, which handles the querying and managing of your entity instances inside the database. The definition is done as follows:
+
+```csharp
+  public class TaskContext : DbContext
+  {
+        public DbSet<TaskItem> TaskItems {get; set;}
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlite("Data Source=tasks.db");  
+  }
+```
+
+A custom context is created for the Task model by inheriting from the `DbContext` class, which defines a list of `TaskItem`s, which is a collection of items that can be queried during the execution of the database. 
+
+#### 4 - Create the controller class:
+
+Now, create the controller class in the same manner as discussed previously:
+
+```csharp
+    [ApiController]
+    [Route("[controller]")]
+    public class TaskController : ControllerBase
+    {
+        private readonly TaskContext _context; //Reference the database context the controller is reffering to
+
+        public TaskController(TaskContext context){
+            _context = context;
+        }
+
+        //Get all tasks in the database and return on get request
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks(){
+            return await _context.TaskItems.ToListAsync();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TaskItem>> PostTask(TaskItem item){
+            _context.TaskItems.Add(item);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetTasks), new { id = item.Id }, item);
+        }
+    }
+```
+
+This class references a `TaskContext` upon construction. 
+An `[HttpGet]` method is defined that returns all items queried in the database.
+An `[HttpPost]` method is defined that queries an item to the database's context. 
+
+It's worth noting that the methods are marked as `async`so that their execution doesn't interrupt the main thread and cause delays or freezes.
+
+#### 5 - Add the database service to the program during runtime:
+
+Finally, to achieve functionality, we must add the newly created database to the program services, so that it executes and works properly, this is done by modifying the `program.cs` file (the one that we mapped the controllers earlier on this guide). The following snippet must be added:
+
+```csharp
+builder.Services.AddDbContext<TaskContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TaskContext")));
+
+//Add the above before this:
+builder.Services.AddControllers();
+```
+
+This will add the database service controller to the builder, and ensure it's correct initialization upon runtime.
+
+#### 6 - Executing and testing:
+
+Before running the project, we must run the following commands in the terminal:
+
+  - dotnet ef migrations add InitialCreate
+  - dotnet ef database update
+
+These commands will initialize the database and it's collections. Not doing that will result in a `500 Internal server error` when trying to use any of the http requests.
+Now we can execute the project using `dotnet run`.
     
