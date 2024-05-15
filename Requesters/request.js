@@ -1,3 +1,4 @@
+//Replace with your dotnet generated local URL
 const url = "http://localhost:5259";
 
 
@@ -36,3 +37,4 @@ function get(){
 }
 
 put("test", true);
+get();

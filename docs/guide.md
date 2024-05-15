@@ -196,11 +196,12 @@ This class will be used to create a context for the database, which handles the 
 
 ```csharp
   public class TaskContext : DbContext
-  {
+    {
+        //Pass context options to base constructor
+        public TaskContext(DbContextOptions<TaskContext> opts) : base(opts) {}
+        
         public DbSet<TaskItem> TaskItems {get; set;}
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("Data Source=tasks.db");  
-  }
+    }
 ```
 
 A custom context is created for the Task model by inheriting from the `DbContext` class, which defines a list of `TaskItem`s, which is a collection of items that can be queried during the execution of the database. 
@@ -255,14 +256,114 @@ builder.Services.AddControllers();
 ```
 
 This will add the database service controller to the builder, and ensure it's correct initialization upon runtime.
+`<TaskContext>` should be replacement for your DbContext class, whatever you named it as. Don't forget to add the necessary compiler references:
+```csharp
+    using Tasks.Controllers;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Sqlite;
+    using Microsoft.EntityFrameworkCore.Design;
+```
 
 #### 6 - Executing and testing:
 
 Before running the project, we must run the following commands in the terminal:
 
-  - dotnet ef migrations add InitialCreate
-  - dotnet ef database update
+```batch
+    dotnet tool install --global dotnet-ef
+    dotnet ef migrations add InitialCreate
+    dotnet ef database update
+```
 
-These commands will initialize the database and it's collections. Not doing that will result in a `500 Internal server error` when trying to use any of the http requests.
+These commands will install the `EF Core tools` CLI extension (which enables the dotnet ef commands) and initialize the database alongside its collections. Not doing that will result in a `500 Internal server error` when trying to use any of the http requests, because the database tables have to be initialized first.
 Now we can execute the project using `dotnet run`.
+
+In this context, a "Migration" is a set of commands to keep the database updates aligned with the aplication's data model, while preserving the existing data. When using `dotnet ef migrations add InitialCreate`, you can replace "InitialCreate" with your desired migration name.
+
+If you came across the error message " `SQLite Error 1: 'no such table: __EFMigrationsHistory'.` " in the terminal, after executing `dotnet ef database update`, it means that SQLite cannot find your database. Follow these steps:
+
+1. Check your Program.cs file. Does it correctly initialize SQLite with a connection string?
+
+```csharp
+builder.Services.AddDbContext<TaskContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TaskContext")));
+    //In this case, the connection string is "TaskContext". Replace that with your
+    //Context class name.
+```
+
+2. Define the connectionstrings inside the `appsettings.json` file, found inside your WebApi solution folder:
+
+```json
+"ConnectionStrings": {
+    "TaskContext": "Data Source=tasks.db"
+  }
+```
     
+Doing this should allow Entity Framework to automatically create the database (`.db`) file for you.
+
+## Step 9: Communicating with the database
+
+Congratulations! You've gone through the difficult part. Now all we have to do is communicate with the API, to access the controllers' http request methods. This can be done in several ways, such as programmatically with any programming language, or inside the terminal.
+Here's a snippet of the javascript file located in `Requesters/request.js` as an example:
+
+```javascript
+const url = "http://localhost:5259";
+
+function put(_name, _isComplete){
+    let data = { name: _name, isComplete: _isComplete};
+    let targetUrl = `${url}/task/post`;
+
+    fetch(targetUrl, {
+      method: 'POST', 
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => {
+        if(!response.ok){
+            throw new Error(`HTTP error! status: ${response.status} at ${targetUrl}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    }); 
+}
+```
+
+In this script, it's declared a function that takes a string (`_name`) and a boolean (`_isComplete`) as parameters. It's then created a dictionary variable to group both of these parameters, called `data`. A variable called `targetUrl` is also created, by concatenating the static URL string with the path for the database input.
+Using the `fetch()` function, included in javascript by default, it's generated a POST request to the database, transforming the input data as a JSON string.
+After fetching, the `.then` function is declared which is ran after the `fetch()` promise(async function) has been called. An anonymous function is used as a parameter, taking the http response as parameter, which then is checked for success or failure. Results are printed in the terminal.
+Another `.then()` prints out the data as a success, otherwise a `.catch()` prints a runtime exception.
+
+The two key components noticeable in this snippet are `method: 'POST'` and `data`, these are intrinsic to the program functionality, as you must first choose what SQL operation to execute, and what data to parse.
+
+#### Alternatively: communicating using the terminal
+
+You can also use CLI tools to communicate with an API. For this example we will use the `batch` shell and the `curl`tool.
+
+**GET Request:**
+
+```batch
+    curl http://localhost:5259/Task/get
+```
+
+With the command above, we access the url and get whatever it returns, in this case the database collection.
+
+**POST Request**
+
+Windows Command Prompt:
+```batch
+    curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"New Task\", \"isComplete\":false}" http://localhost:5259/Task/post
+```
+
+PowerShell:
+```batch
+    curl -X POST -H "Content-Type: application/json" -d '{`"name`":`"New Task`", `"isComplete`":false}' http://localhost:5259/Task/post
+```
+
+With the command above, we define the `SQL operation`, the header, and the `data` variable. Then we pass the URL where the GET operation method routs to.
