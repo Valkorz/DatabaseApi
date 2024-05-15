@@ -9,11 +9,17 @@ This project is a C# API, created using .NET Core MVC. It also contains a SQLite
 ### Files:
 
 `./docs/guide.md`: a comprehensive step-by-step guide to building your own .Net CORE WebApi.
+
 `.docs/httpAttributes.md`: a list of http attributes to be used when defining methods for a controller.
+
 `./Tasks/`: the WebApi folder.
+
 `./Tasks/Program.cs`: root file of the api, used for initializing controllers and other resources.
+
 `.Tasks/Controllers/`: where the custom controller implementations will be stored.
+
 `./Requesters/`: code examples in different programming languages to communicate with the API.
+
 
 ---
 
