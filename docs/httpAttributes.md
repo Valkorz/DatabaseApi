@@ -98,4 +98,38 @@ Example:
        
 
 ```
+---
+
+<h1 style = 
+"color:teal;
+font-family:verdana;
+font-size:150%;
+text-align:center;"> 
+[HttpPost] or [HttpPost("name")]
+</h1>
+
+This attribute is using for marking a method as a `HttpPost` method, this basically means that it's a method that **receives data**. Using databases as an example, an `HttpPost` receives the data as a JSON with properties and elements, and then attempts to convert this JSON to whatever type is defined as the method parameter. This is noticeable when we use `curl` as an example, to generate a POST request:
+
+```batch
+curl -X POST -H "Content-Type: application/json" -d "{\"name\":\"New Task\", \"isComplete\":false}" http://localhost:5259/Task/post
+```
+
+The above terminal command will access the post method described by the url, sending the data types `name` and `isComplete`. The method will convert the key values into the Task item's `Name` and `IsComplete` properties.
+
+This is what the POST method in question looks like:
+
+```csharp
+[HttpPost("post")]
+public async Task<ActionResult<TaskItem>> PostTask(TaskItem item){
+    _context.TaskItems.Add(item);
+    await _context.SaveChangesAsync();
+
+    return CreatedAtAction(nameof(GetTasks), new { id = item.Id }, item);
+}
+```
+
+---
+
+
+
 

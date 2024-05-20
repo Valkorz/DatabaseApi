@@ -117,6 +117,8 @@ info: Microsoft.Hosting.Lifetime[0]
 ```
 ``` Content root path: C:\{YourPath}\{FolderName} ``` specifies the target of your WebAPI solution.
 
+**TIP:** You can use `dotnet run --urls http://<Device_IP>:<Port>` to allow other devices on the same network to communicate with the API, as this will turn the address into your machine's network IP. You can check your device IP by running `ipconfig` in the terminal.
+
 ## Step 6: Navigating the website
 
 While it is not an actual "website", given the fact that the subject of matter is an API, it is still possible to navigate the http addresses, because that will be used by other programs whom attempt to communicate with the API. It doesn't have an interface, but the return contents of methods will be displayed on the screen of your browser.
@@ -278,7 +280,7 @@ Before running the project, we must run the following commands in the terminal:
 These commands will install the `EF Core tools` CLI extension (which enables the dotnet ef commands) and initialize the database alongside its collections. Not doing that will result in a `500 Internal server error` when trying to use any of the http requests, because the database tables have to be initialized first.
 Now we can execute the project using `dotnet run`.
 
-In this context, a "Migration" is a set of commands to keep the database updates aligned with the aplication's data model, while preserving the existing data. When using `dotnet ef migrations add InitialCreate`, you can replace "InitialCreate" with your desired migration name.
+In this context, a "Migration" is a set of commands to keep the database updates aligned with the aplication's data model, while preserving the existing data. When using `dotnet ef migrations add InitialCreate`, you can replace "InitialCreate" with your desired migration name. This means that if you make any changes to your database code, you can add another migration and update your database to it in the terminal.
 
 If you came across the error message " `SQLite Error 1: 'no such table: __EFMigrationsHistory'.` " in the terminal, after executing `dotnet ef database update`, it means that SQLite cannot find your database. Follow these steps:
 
@@ -300,6 +302,10 @@ builder.Services.AddDbContext<TaskContext>(options =>
 ```
     
 Doing this should allow Entity Framework to automatically create the database (`.db`) file for you.
+
+#### 7 - Updating your database table
+
+You can update your database variables if necessary, this can be done by creating a new migration and then updating the database in the terminal, doing so will match the database's information to the newest migration.
 
 ## Step 9: Communicating with the database
 
@@ -367,3 +373,46 @@ PowerShell:
 ```
 
 With the command above, we define the `SQL operation`, the header, and the `data` variable. Then we pass the URL where the GET operation method routs to.
+
+
+## Step 10: Creating outputs for your controller methods
+
+Controller methods can have different types of outputs (return types), this is especially useful for debugging, when you want to know how the information is behaving, when it's being added to your database and if there are any errors. Here are some examples:
+
+**Basic string:**
+
+```csharp
+    [HttpGet]
+    public string HelloWorld(){
+        return "Hello world!";
+    }
+```
+
+When the above method is called by request, it will return the string `"Hello world!"` synchronously. 
+
+**ActionResult generic task:**
+
+A task is basically a procedure, this procedure can be done asynchronously, this means that it'll use another thread and avoid potential freezes or delays. This special kind of method is marked as `async`. This method returns a task identified as `ActionResult`, which is a class that defines what a controller returns as a reponse, in the context of internet requests. It's more appropriate to return for general data types as you can't mark string methods as `async`, but you can still return a string from a `Task<ActionResult>`:
+
+```csharp
+    [HttpGet]
+    public async Task<ActionResult> Sum(){
+        int sum = 1 + 1;
+        return Content($"1 + 1 = {sum}.");
+    }
+```
+
+In this case, the function `Content()` is returned from the method, which is a valid ActionResult. There are many other `ActionResult` methods that can be applied for different purposes, such as `CreatedAtAction()` and `Ok()`.
+
+**Generic ActionResult generic task:**
+
+`ActionResult` can also be used as a generic class, and the type you define it as can be used as a return, instead of using compatible methods like `Content()`:
+
+```csharp
+    [HttpGet("get")]
+    public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks(){
+        return await _context.TaskItems.ToListAsync();
+    }
+```
+
+The return type of the method is `Task<ActionResult<IEnumerable<TaskItem>>>`, this means that you can simply return an IEnumerable instance and it will still count as a valid `ActionResult`.

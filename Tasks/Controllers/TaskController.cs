@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -41,25 +42,87 @@ namespace Tasks.Controllers
         }
 
         //Get all tasks in the database and return on get request
-        [HttpGet("get")]
+        [HttpGet("dump")]
         public async Task<ActionResult<IEnumerable<TaskItem>>> GetTasks(){
             return await _context.TaskItems.ToListAsync();
         }
 
+        //Get single task in the database
+        [HttpGet("get/{id}")]
+        public async Tasks<ActionResult<TaskItem>> GetTask(int id){
+            return await _context.TaskItems.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        /*
+            Add new Task element to database
+            "Content-Type: application/json" -d '{`"name`":`"New Task`", `"isComplete`":false}' http://localhost:5259/Task/post
+        */
+
         [HttpPost("post")]
         public async Task<ActionResult<TaskItem>> PostTask(TaskItem item){
+            item.Id = _context.TaskItems.Count + 1;
             _context.TaskItems.Add(item);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetTasks), new { id = item.Id }, item);
         }
 
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateTask(int id, TaskItem item)
+        {
+            if (id != item.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(item).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.TaskItems.Any(x => x.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        /*
+            Delete element from database, specified by ID.
+            http://localhost:5000/Task/delete/{id}
+        */
+
         [HttpDelete("delete")]
-        public async Task<ActionResult<TaskItem>> DeleteTask(TaskItem item){
-            _context.TaskItems.Add(item);
+        public async Task<ActionResult<TaskItem>> DeleteTask(int id){
+            var item = await _context.TaskItems.FirstOrDefaultAsync(x => x.Id == id);
+
+            if(item == null) return Content($"{id} not found in the database.");
+
+            _context.TaskItems.Remove(item);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetTasks), new { id = item.Id }, item);
+            return Content($"Removed item: {item}");
+        }
+
+        /*
+            Clear database.
+            http://localhost:5000/Task/clear
+        */
+
+        [HttpDelete("clear")]
+        public async Tasks<ActionResult> Clear(){
+            _context.TaskItems.Clear();
+            await _context.SaveChangesAsync();
+            return Content($"Cleared all data.");
         }
     }
 }
