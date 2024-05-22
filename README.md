@@ -2,7 +2,7 @@
 ## .NET Core C# API + Database project
 ---
 
-This project is a C# API, created using .NET Core MVC. It also contains a SQLite database created with Entity Framework.
+This project is a task/todo list, using dotnet core MVC and Entity Framework to implement a database of tasks (in SQLite) that can be modified through http protocol commands, featuring GET, POST, PUT and DELETE.
 
 ---
 
