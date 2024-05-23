@@ -416,3 +416,38 @@ In this case, the function `Content()` is returned from the method, which is a v
 ```
 
 The return type of the method is `Task<ActionResult<IEnumerable<TaskItem>>>`, this means that you can simply return an IEnumerable instance and it will still count as a valid `ActionResult`.
+
+## Step 11: Allowing CORS (Cross-Resource origin sharing)
+
+An issue you might have crossed by is trying to access the API from another url, hosted as a different website. There's a security measure called "CORS" that blocks data from being shared across different domains. This, however, can be toggled:
+
+1. Install the dotnet core CORS package:
+
+```batch
+    dotnet add package Microsoft.AspNetCore.Cors
+``` 
+2. Add CORS to your API services (in Program.cs):
+
+```csharp
+    services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAllOrigins",
+            builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyHeader()
+                       .AllowAnyMethod();
+            });
+    });
+```
+With this implementation you can filter what external source can tinker with your API (calling for GET and POST requests). You can change `"AllowAllOrigins"` to whatever CORS policy name you prefer.
+
+3. Activate the use of cors. Call this before `app.UseRouting()` in Program.cs:
+
+```csharp
+    app.UseCors("AllowAllOrigins");
+```
+
+## Step 12: Converting your database to CSV
+
+TODO
