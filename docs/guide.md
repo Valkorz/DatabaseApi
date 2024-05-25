@@ -447,7 +447,3 @@ With this implementation you can filter what external source can tinker with you
 ```csharp
     app.UseCors("AllowAllOrigins");
 ```
-
-## Step 12: Converting your database to CSV
-
-TODO
